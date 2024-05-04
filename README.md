@@ -122,7 +122,7 @@ The following output shows the file entries for the first 4 files.
 	-	data at offset 0
 -	`01 00 00 00` `01 00 00 00` `00 3e 00 00` `91 28 00 00` `01 00 00 00` `91 0b 00 00`
 	-	name at index 1, 1 entry
-	-	raw size 10385 bytes, stored size 10385 bytes
+	-	raw size 15872 bytes, stored size 10385 bytes
 	-	compression method 1 (BPE)
 	-	data at offset 2961
 -	`02 00 00 00` `02 00 00 00` `01 01 00 00` `c7 00 00 00` `01 00 00 00` `22 34 00 00`
