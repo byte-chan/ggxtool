@@ -15,6 +15,7 @@ This tool does **NOT** support:
 
 So far, this tool is known to be compatible with archives for the following games:
 -	Mamorukun Curse! (PS3) (NPUB30934, version 1.01)
+-	Strike Witches: Hakugin no Tsubasa (Xbox 360) (CF-2003)
 
 ## Acknowledgements
 
