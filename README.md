@@ -15,6 +15,7 @@ This tool does **NOT** support:
 
 So far, this tool is known to be compatible with archives for the following games:
 -	Mamorukun Curse! (PS3) (NPUB30934, version 1.01)
+-	Mamoru-kun wa Norowarete Shimatta! (Xbox 360) (GR-2038)
 -	Strike Witches: Hakugin no Tsubasa (Xbox 360) (CF-2003)
 
 ## Acknowledgements
@@ -170,7 +171,9 @@ Because storing data in an easily accessible format is no good, these uncompress
 000000f0  5b 3d 7e 25 28 26 21 2d  23 5e 40 29 5d 27 7c 24  |[=~%(&!-#^@)]'|$|
 ```
 
-Additionally, each byte of that block is ORed with a fixed byte derived from a file's size (`size / 256 + 5`). For a hypothetical 64000-byte file, each byte of that block would be ORed with `0xFF`.
+Additionally, each byte of that block is ORed with a fixed "key" byte derived from a file's **raw** size (`size / 256 + 5`). For a hypothetical 64000-byte file, each byte of that block would be ORed with `0xFF`.
+The reference implementation also appears to zero-pad uncompressed files (before encryption) if the raw size isn't a multiple of 64 bytes, even though it doesn't seem to care when *reading* files without padding. Encryption and decryption is applied to the **stored** file (with padding), but the "key" byte is derived from the **raw** file (without padding).
+This tool reproduces the padding for uncompressed files, but should be able to read uncompressed files without padding.
 
 The offset into that block does **not** start over for each uncompressed file.
 For several hypothetical uncompressed 64-byte files, the first file would be XORed with the first 64 bytes (OR `0x05`), the second file with the next 64 bytes, and so on. This offset only advances for uncompressed files.

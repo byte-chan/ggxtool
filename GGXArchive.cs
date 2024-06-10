@@ -75,11 +75,12 @@ class GGXArchive {
 			byte[] rawData;
 			switch(compression) {
 				case GGXCompression.None: {
-						var key = (byte)(storedSize / 256 + 5);
+						var key = (byte)(rawSize / 256 + 5);
 						rawData = storedData;
 						for(var j = 0; j < storedSize; j++) {
 							rawData[j] ^= (byte)(magicData[cryptOffset++] | key);
 						}
+						Array.Resize(ref rawData, rawSize);
 						break;
 					}
 				case GGXCompression.BPE: {
@@ -125,10 +126,14 @@ class GGXArchive {
 			var usize = file.data.Length;
 			switch(file.compression) {
 				case GGXCompression.None: {
+						var ssize = (usize + 0x3F) & ~0x3F;
 						var key = (byte)(usize / 256 + 5);
-						zdata = new byte[usize];
+						zdata = new byte[ssize];
 						for(var i = 0; i < usize; i++) {
 							zdata[i] = (byte)(file.data[i] ^ (byte)(magicData[cryptOffset++] | key));
+						}
+						for(var i = usize; i < ssize; i++) {
+							zdata[i] = (byte)(magicData[cryptOffset++] | key);
 						}
 						break;
 					}
