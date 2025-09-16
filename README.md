@@ -4,13 +4,12 @@
 
 This tool supports:
 -	very long file names
--	file names with non-ASCII characters (Windows-31J)
+-	file names with non-ASCII characters (Windows-31J by default)
 -	uncompressed (but "encrypted") files
 -	<abbr title="byte pair encoding">BPE</abbr>-compressed files
 
 This tool does **NOT** support:
--	non-uppercase file names (converted to uppercase for consistency with existing archives)
--	addition and deletion of files without recompressing other files (again, very early stage of development)
+-	non-uppercase file names (by default, converted to uppercase for consistency with existing archives)
 -	<abbr title="Lempel–Ziv–Storer–Szymanski">LZSS</abbr>-compressed files (mentioned in debug messages, but never encountered in any archives)
 
 So far, this tool is known to be compatible with archives for the following games:
