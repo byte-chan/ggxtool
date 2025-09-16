@@ -16,19 +16,21 @@ This tool does **NOT** support:
 So far, this tool is known to be compatible with archives for the following games:
 -	Mamorukun Curse! (PS3) (NPUB30934, version 1.01)
 -	Mamoru-kun wa Norowarete Shimatta! (Xbox 360) (GR-2038)
--	Strike Witches: Hakugin no Tsubasa (Xbox 360) (CF-2003)
+-	Strike Witches: Hakugin no Tsubasa (Xbox 360) (CF-2003) (see also [Data Crystal notes][DataCrystal])
 
 ## Acknowledgements
 
 This tool supports the GGX archive format, created by Osamu Chadani of Gulti Co., Ltd. (now Kayac Akiba Studio Co., Ltd.) in 2007.
 
-For compression and decompression of archived files, this tool uses a C# adaptation of the byte pair encoding (BPE) algorithm described and implemented by Philip Gage in ["A New Algorithm for Data Compression"][1].
+For compression and decompression of archived files, this tool uses a C# adaptation of the byte pair encoding (BPE) algorithm described and implemented by Philip Gage in ["A New Algorithm for Data Compression"][Gage].
+
+A recently-created [Python implementation][ggx.py] by @dakrk uncovered an edge case in the XOR algorithm for uncompressed files, documented below.
 
 ## Using ggxtool
 
 The following operations are supported by ggxtool:
 -	adding files to archives: `ggxtool a <archive> [files...]`
-	-	with no files specified, ggxtool repacks the archive, sometimes achieving a slightly better compression ratio
+	-	with no files specified, ggxtool repacks the archive, but without recompressing any files
 -	deleting files from archives: `ggxtool d <archive> [files...]`
 -	listing files in archives: `ggxtool l <archive> [files...]`
 	-	with no files specified, all files are listed
@@ -37,14 +39,16 @@ The following operations are supported by ggxtool:
 -	extracting files from archives: `ggxtool x <archive> [files...]`
 	-	with no files specified, all files are extracted
 	-	with some files specified, only those files (or files in those directories) are extracted
+-	decompressing archives in-place: `ggxtool decompress <archive> [files...]`
+	-	with no files specified, all files are decompressed
 
 All operations write the names of affected files to standard output.
 
 ## The archive format
 
-All fields are stored in little-endian byte order. This tool uses .NET's [BinaryReader][2] and should work on big-endian systems.
+All fields are stored in little-endian byte order. This tool uses .NET's [BinaryReader][BinaryReader] and should work on big-endian systems.
 
-Because the reference implementation did it first, file names are encoded using the [Windows code page 932][3], also known as Windows-31J, which is a variant of the Shift JIS encoding.
+Because the reference implementation did it first, file names are encoded using the [Windows code page 932][CP932], also known as Windows-31J, which is a variant of the Shift JIS encoding.
 
 ### Header
 
@@ -140,7 +144,7 @@ The following output shows the file entries for the first 4 files.
 
 ### Compressed data (BPE)
 
-The format for BPE-compressed data is exactly the same as [Gage's description of the format][1].
+The format for BPE-compressed data is exactly the same as [Gage's description of the format][Gage].
 Any implementation of the original BPE algorithm should be able to decompress data from GGX archives.
 This includes Gage's reference implementation, which may crash if decompression overflows the 30-byte stack.
 The reference implementation also features a potentially useless out-of-bounds memory access.
@@ -171,13 +175,15 @@ Because storing data in an easily accessible format is no good, these uncompress
 000000f0  5b 3d 7e 25 28 26 21 2d  23 5e 40 29 5d 27 7c 24  |[=~%(&!-#^@)]'|$|
 ```
 
-Additionally, each byte of that block is ORed with a fixed "key" byte derived from a file's **raw** size (`size / 256 + 5`). For a hypothetical 64000-byte file, each byte of that block would be ORed with `0xFF`.
+Additionally, each byte of that block is ORed with a fixed "key" byte derived from a file's **raw** size (`size / 256 + 5`), or `0x05` if it would otherwise be `0x00` (discovered [here][ggx.py]). For a hypothetical 64000-byte file, each byte of that block would be ORed with `0xFF`.
 The reference implementation also appears to zero-pad uncompressed files (before encryption) if the raw size isn't a multiple of 64 bytes, even though it doesn't seem to care when *reading* files without padding. Encryption and decryption is applied to the **stored** file (with padding), but the "key" byte is derived from the **raw** file (without padding).
 This tool reproduces the padding for uncompressed files, but should be able to read uncompressed files without padding.
 
 The offset into that block does **not** start over for each uncompressed file.
 For several hypothetical uncompressed 64-byte files, the first file would be XORed with the first 64 bytes (OR `0x05`), the second file with the next 64 bytes, and so on. This offset only advances for uncompressed files.
 
-[1]: http://www.pennelynn.com/Documents/CUJ/HTML/94HTML/19940045.HTM
-[2]: https://learn.microsoft.com/dotnet/api/system.io.binaryreader
-[3]: https://en.wikipedia.org/wiki/Code_page_932_(Microsoft_Windows)
+[Gage]: http://www.pennelynn.com/Documents/CUJ/HTML/94HTML/19940045.HTM
+[BinaryReader]: https://learn.microsoft.com/dotnet/api/system.io.binaryreader
+[CP932]: https://en.wikipedia.org/wiki/Code_page_932_(Microsoft_Windows)
+[DataCrystal]: https://datacrystal.tcrf.net/wiki/Strike_Witches:_Silver_Wing/Notes
+[ggx.py]: https://gist.github.com/dakrk/bf6c566939aba80d1817b47e2fc38200#file-ggx-py-L55
