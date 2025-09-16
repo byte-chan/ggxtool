@@ -1,3 +1,5 @@
+namespace GGXTool;
+
 using System;
 using System.IO;
 
@@ -9,7 +11,7 @@ using System.IO;
 /// <param name="hashSize">Size of hash table</param>
 /// <param name="maxChars">Char set per block</param>
 /// <param name="threshold">Minimum pair count</param>
-class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int threshold = 3) {
+public class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int threshold = 3) {
 	/// <summary>Data block</summary>
 	readonly byte[] buffer = new byte[blockSize];
 	/// <summary>Pair table</summary>
