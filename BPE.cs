@@ -71,8 +71,9 @@ class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int th
 	}
 
 	/// <summary>Write each pair table and data block to output</summary>
-	void filewrite(Stream output) {
+	int filewrite(Stream output) {
 		int i, len, c = 0;
+		int written = 0;
 
 		/* For each character 0..255 */
 		while(c < 256) {
@@ -84,6 +85,7 @@ class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int th
 					len++; c++;
 				}
 				output.WriteByte((byte)(len + 127));
+				written++;
 				len = 0;
 				if(c == 256) break;
 			} else { /* Else count run of pair codes */
@@ -93,14 +95,17 @@ class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int th
 					len++; c++;
 				}
 				output.WriteByte((byte)len);
+				written++;
 				c -= len + 1;
 			}
 
 			/* Write range of pairs to output */
 			for(i = 0; i <= len; i++) {
 				output.WriteByte(leftcode[c]);
+				written++;
 				if(c != leftcode[c]) {
 					output.WriteByte(rightcode[c]);
+					written++;
 				}
 				c++;
 			}
@@ -110,13 +115,15 @@ class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int th
 		output.WriteByte((byte)(size / 256));
 		output.WriteByte((byte)(size % 256));
 		output.Write(buffer, 0, size);
+		return written + 2 + size;
 	}
 
 	/// <summary>Compress from input file to output file</summary>
-	void compress(Stream infile, Stream outfile) {
+	int compress(Stream infile, Stream outfile) {
 		int leftch = 0, rightch = 0, code, oldsize;
 		int index, r, w, best;
 		bool done = false;
+		int written = 0;
 
 		/* Compress each data block until end of file */
 		while(!done) {
@@ -177,21 +184,23 @@ class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int th
 				index = lookup((byte)leftch, (byte)rightch);
 				count[index] = 1;
 			}
-			filewrite(outfile);
+			written += filewrite(outfile);
 		}
+		return written;
 	}
 
 	/// <summary>Compress data from input to output</summary>
-	public void Compress(Stream input, Stream output) {
-		lock(this) compress(input, output);
+	public int Compress(Stream input, Stream output) {
+		lock(this) return compress(input, output);
 	}
 
 	/// <summary>Decompress data from input to output</summary>
-	public static void Expand(Stream input, Stream output) {
+	public static int Expand(Stream input, Stream output) {
 		Span<byte> left = stackalloc byte[256];
 		Span<byte> right = stackalloc byte[256];
 		Span<byte> stack = stackalloc byte[256];
 		int c, count, i, size;
+		int written = 0;
 
 		/* Unpack each block until end of file */
 		while((count = input.ReadByte()) != -1) {
@@ -235,11 +244,13 @@ class BPE(int blockSize = 10000, int hashSize = 8192, int maxChars = 220, int th
 				/* Output byte or push pair on stack */
 				if(c == left[c]) {
 					output.WriteByte((byte)c);
+					written++;
 				} else {
 					stack[i++] = right[c];
 					stack[i++] = left[c];
 				}
 			}
 		}
+		return written;
 	}
 }
