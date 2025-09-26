@@ -13,6 +13,7 @@ This tool does **NOT** support:
 -	<abbr title="Lempel–Ziv–Storer–Szymanski">LZSS</abbr>-compressed files (mentioned in debug messages, but never encountered in any archives)
 
 So far, this tool is known to be compatible with archives for the following games:
+-	Mamorukun ReCurse! (Windows, available on [Steam]!)
 -	Mamorukun Curse! (PS3) (NPUB30934, version 1.01)
 -	Mamoru-kun wa Norowarete Shimatta! (Xbox 360) (GR-2038)
 -	Strike Witches: Hakugin no Tsubasa (Xbox 360) (CF-2003) (see also [Data Crystal notes][DataCrystal])
@@ -186,3 +187,4 @@ For several hypothetical uncompressed 64-byte files, the first file would be XOR
 [CP932]: https://en.wikipedia.org/wiki/Code_page_932_(Microsoft_Windows)
 [DataCrystal]: https://datacrystal.tcrf.net/wiki/Strike_Witches:_Silver_Wing/Notes
 [ggx.py]: https://gist.github.com/dakrk/bf6c566939aba80d1817b47e2fc38200#file-ggx-py-L55
+[Steam]: https://store.steampowered.com/app/3273980/
